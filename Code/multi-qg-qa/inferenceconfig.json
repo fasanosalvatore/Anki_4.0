@@ -1,5 +1,5 @@
 {
-    "entryScript": "script.py",
+    "entryScript": "score.py",
     "environment": {
         "docker": {
             "arguments": [],
@@ -25,7 +25,7 @@
                             "scikit-learn==0.22.1",
                             "nltk",
                             "torch",
-                            "transformers"
+                            "transformers==3.0.0"
                         ]
                     }
                 ],

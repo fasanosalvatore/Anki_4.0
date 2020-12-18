@@ -1,3 +1,7 @@
+import os
+import json
+#from pipelines import pipeline
+
 import itertools
 import logging
 from typing import Optional, Dict, Union
@@ -209,3 +213,22 @@ def pipeline(
     model = AutoModelForSeq2SeqLM.from_pretrained(model)
 
     return MultiTaskQAQGPipeline(model=model, tokenizer=tokenizer, ans_model=model, ans_tokenizer=tokenizer, qg_format="highlight", use_cuda=True)
+
+
+def init():
+  global npl
+  model_path = os.path.join(os.getenv('AZUREML_MODEL_DIR'), 'pytorch_model.bin')
+  # npl = pipeline(model=model_path)
+  npl = pipeline()
+
+# Handle requests to the service
+def run(data):
+    try:
+        data = json.loads(data)
+        print(data["text"])
+        result = npl(data["text"])
+        print("RESULT", result)
+        return result
+    except Exception as e:
+        error = str(e)
+        return error
