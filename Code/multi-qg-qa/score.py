@@ -16,6 +16,7 @@ from transformers import(
     AutoTokenizer,
     PreTrainedModel,
     PreTrainedTokenizer,
+    AutoConfig,
 )
 
 logger = logging.getLogger(__name__)
@@ -209,7 +210,7 @@ def pipeline(
 
     tokenizer = model
     tokenizer = AutoTokenizer.from_pretrained(tokenizer)
-
+    config = AutoConfig.from_pretrained(model)
     model = AutoModelForSeq2SeqLM.from_pretrained(model)
 
     return MultiTaskQAQGPipeline(model=model, tokenizer=tokenizer, ans_model=model, ans_tokenizer=tokenizer, qg_format="highlight", use_cuda=True)
@@ -217,9 +218,9 @@ def pipeline(
 
 def init():
   global npl
-  model_path = os.path.join(os.getenv('AZUREML_MODEL_DIR'), 'pytorch_model.bin')
-  # npl = pipeline(model=model_path)
-  npl = pipeline()
+  model_path = os.path.join(os.getenv('AZUREML_MODEL_DIR'), './models/')
+  npl = pipeline(model=model_path)
+  #npl = pipeline()
 
 # Handle requests to the service
 def run(data):
