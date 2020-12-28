@@ -12,6 +12,7 @@ import * as restify from 'restify';
 import { Bot } from './bot/Bot';
 import { MainDialog } from './dialog/MainDialog';
 import { mongoose } from '@typegoose/typegoose';
+import path from 'path';
 
 mongoose
 	.connect(
@@ -40,6 +41,11 @@ const server = restify.createServer();
 server.listen(process.env.port || process.env.PORT || 3978, () => {
 	console.log(`${server.name} listening on ${server.url}`);
 });
+
+server.get(
+	'/public/*',
+	restify.plugins.serveStaticFiles(path.join(__dirname, '/bot', '/audio/')),
+);
 
 const adapter = new BotFrameworkAdapter({
 	appId: process.env.MICROSOFT_APP_ID,

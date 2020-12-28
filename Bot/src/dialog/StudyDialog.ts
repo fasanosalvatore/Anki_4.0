@@ -5,6 +5,7 @@ import axios from 'axios';
 import * as Bluebird from 'bluebird';
 import * as sdk from 'microsoft-cognitiveservices-speech-sdk';
 import ffmpeg from 'fluent-ffmpeg';
+import { v4 as uuid } from 'uuid';
 import {
 	ActionTypes,
 	ActivityTypes,
@@ -137,20 +138,31 @@ export class StudyDialog extends ComponentDialog {
 			case 'bad':
 				questions[index].checks.shift();
 				questions[index].checks.push(false);
-				const audioPath = await this.syntethizeAudio(questions[index].answer);
-				const audio = fs.readFileSync(audioPath);
-				const base64audio = Buffer.from(audio).toString('base64');
+				const audioName = await this.syntethizeAudio(questions[index].answer);
+				// const audio = fs.readFileSync(audioPath);
+				// const base64audio = Buffer.from(audio).toString('base64');
 
-				const audioAtt = {
-					name: 'message.ogg',
-					contentType: 'audio/ogg',
-					contentUrl: `data:audio/ogg;base64,${base64audio}`,
+				// const audioAtt = {
+				// 	name: 'message.ogg',
+				// 	contentType: 'audio/ogg',
+				// 	contentUrl: `data:audio/ogg;base64,${base64audio}`,
+				// };
+
+				// message = { type: ActivityTypes.Message };
+				// message.text =
+				// 	'Unfortunately your answer is wrong, listen to the correct answer.';
+				// message.attachments = [audioAtt];
+				message = {
+					text: 'Unfortunately your answer is wrong, listen to the correct answer.',
+					channelData: [
+						{
+							method: 'sendVoice',
+							parameters: {
+								voice: `https://2e56ba4b566e.ngrok.io/public/${audioName}`,
+							},
+						},
+					],
 				};
-
-				message = { type: ActivityTypes.Message };
-				message.text =
-					'Unfortunately your answer is wrong, listen to the correct answer.';
-				message.attachments = [audioAtt];
 
 				break;
 			default:
@@ -210,24 +222,21 @@ export class StudyDialog extends ComponentDialog {
 		const syn = (answer: string) => {
 			return new Promise((resolve, reject) => {
 				synthesizer.speakSsmlAsync(
-					`<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis"
-    xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="en-US">
-  <voice name="en-US-AriaNeural">
-    <mstts:express-as style="cheerful">
-      ${answer}
-    </mstts:express-as>
-  </voice>
-</speak>`,
+					`<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="en-US">
+  					<voice name="en-US-AriaNeural">
+    					<mstts:express-as style="cheerful">
+      					${answer}
+							</mstts:express-as>
+						</voice>
+					</speak>`,
 					(result) => {
 						if (result) {
-							console.log('OKAY');
 							resolve(result);
 						}
 						synthesizer.close();
 					},
 					(err) => {
 						if (err) {
-							console.log('ERROE');
 							reject(err);
 						}
 						synthesizer.close();
@@ -236,7 +245,7 @@ export class StudyDialog extends ComponentDialog {
 			});
 		};
 
-		function promisifyCommand(command: any) {
+		function promisifyCommand(command: any, id: string) {
 			return Bluebird.Promise.promisify((cb) => {
 				command
 					.on('end', () => {
@@ -245,15 +254,19 @@ export class StudyDialog extends ComponentDialog {
 					.on('error', (err) => {
 						cb(err);
 					})
-					.save(path.join(dir, 'message.ogg'));
+					.save(path.join(dir, id + '.ogg'));
 			});
 		}
 
-		await syn(answer);
-		const command = ffmpeg(path.join(dir, 'message.wav')).format('ogg');
-		await promisifyCommand(command)();
+		const id = uuid();
 
-		return dir + 'message.ogg';
+		await syn(answer);
+		const command = ffmpeg(path.join(dir, 'message.wav'))
+			.outputOptions('-acodec libopus')
+			.format('ogg');
+		await promisifyCommand(command, id)();
+
+		return id + '.ogg';
 	}
 
 	private async recognizeAudio(audio: any) {
