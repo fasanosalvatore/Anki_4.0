@@ -218,7 +218,7 @@ def pipeline(
 
 def init():
   global npl
-  model_path = os.path.join(os.getenv('AZUREML_MODEL_DIR'), './models/')
+  model_path = os.path.join(os.getenv('AZUREML_MODEL_DIR'), 'models/')
   npl = pipeline(model=model_path)
   #npl = pipeline()
 
@@ -229,7 +229,7 @@ def run(data):
         print(data["text"])
         result = npl(data["text"])
         print("RESULT", result)
-        return result
+        return json.dumps({"result": result,"error":None})
     except Exception as e:
         error = str(e)
-        return error
+        return json.dumps({"result": None,"error":error})
