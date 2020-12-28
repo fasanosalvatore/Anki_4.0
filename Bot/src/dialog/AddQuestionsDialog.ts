@@ -81,15 +81,29 @@ export class AddQuestionDialog extends ComponentDialog {
 		const { result: text } = step;
 		//Effettuare qui la chiamata all'api per ottenere le domande/risposte e salvarle nel database
 		try {
-			// const questions = await axios.post(process.env.QNA_ML_ENDPOINT!, {text}) as [];
-			// questions.map(async (qna: Question) => {
-			//   const {question, answer} = qna
-			//   return await QuestionModel.create({userId: step.context.activity.from.id, question, answer})
-			// })
+			const rawQuestions = await axios.post(
+				process.env.QNA_ML_ENDPOINT!,
+				{ text },
+				{
+					headers: {
+						Authorization: 'Bearer Ehnc2vSj1kBXrgqa88gDvHCbBZ32usWp',
+					},
+				},
+			);
+			const questions: Question[] = JSON.parse(rawQuestions.data).result;
+			questions.map(async (qna: Question) => {
+				const { question, answer } = qna;
+				await QuestionModel.create({
+					userId: step.context.activity.from.id,
+					question,
+					answer,
+				});
+			});
 			await step.context.sendActivity(
 				'The questions have been correctly generated, good luck!',
 			);
 		} catch (err) {
+			console.log(err);
 			await step.context.sendActivity(
 				'Forgive me, there must have been some problem with the network, please try again soon.',
 			);

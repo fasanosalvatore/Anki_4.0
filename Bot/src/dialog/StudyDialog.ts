@@ -116,7 +116,7 @@ export class StudyDialog extends ComponentDialog {
 		let { index } = step.values;
 		const { result: answer } = step;
 		let message;
-		if (answer[0]) {
+		if (Array.isArray(answer)) {
 			if (answer[0].contentType === 'audio/ogg') {
 				const msg = await this.recognizeAudio(answer[0]);
 				//CONTROLLO QUALITÀ RISPOSTA
@@ -194,7 +194,7 @@ export class StudyDialog extends ComponentDialog {
 			{ _id: questions[index]._id },
 			{
 				checks: questions[index].checks,
-				nextCheckDate: questions[index].nextCheckDate,
+				nextCheckDate: this.newCheckDate(questions[index]),
 			},
 		);
 		if (questions.length - 1 === index) {
@@ -248,6 +248,24 @@ export class StudyDialog extends ComponentDialog {
 	// 		questions
 	// 	});
 	// }
+
+	private newCheckDate(question: Question) {
+		if (!question.checks[4])
+			return new Date(question.nextCheckDate?.getTime() + 24 * 60 * 60 * 1000);
+		const { checks } = question;
+		checks.reverse();
+		let count = 0;
+		for (let check in checks) {
+			if (!check) break;
+			count++;
+		}
+		checks.reverse();
+		const ms =
+			new Date(question.nextCheckDate).getTime() +
+			2 ** (count - 1) * 24 * 60 * 60 * 1000;
+		console.log(2 ** (count - 1));
+		return new Date(ms);
+	}
 
 	private async syntethizeAudio(answer: string) {
 		const speechConfig = sdk.SpeechConfig.fromSubscription(
