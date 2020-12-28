@@ -13,18 +13,19 @@ import {
 	ComponentDialog,
 	DialogSet,
 	DialogState,
-	DialogTurnResult,
 	DialogTurnStatus,
 	ListStyle,
 	TextPrompt,
 	WaterfallDialog,
 	WaterfallStepContext,
 } from 'botbuilder-dialogs';
-import { QuestionModel } from '../model/Question';
+import { AddQuestionDialog } from './AddQuestionsDialog';
+
 import { StudyDialog } from './StudyDialog';
 
 const MAIN_DIALOG = 'MAIN_DIALOG';
 const MAIN_WATERFALL_DIALOG = 'WATERFALL_DIALOG';
+const ADD_QUESTION_DIALOG = 'ADD_QUESTION_DIALOG';
 const STUDY_DIALOG = 'STUDY_DIALOG';
 const TEXT_PROMPT = 'TEXT_PROMPT';
 const CHOICE_PROMPT = 'CHOICE_PROMPT';
@@ -41,6 +42,7 @@ export class MainDialog extends ComponentDialog {
 
 		this.addDialog(new ChoicePrompt(CHOICE_PROMPT))
 			.addDialog(new TextPrompt(TEXT_PROMPT))
+			.addDialog(new AddQuestionDialog(userState))
 			.addDialog(new StudyDialog(userState))
 			.addDialog(
 				new WaterfallDialog(MAIN_WATERFALL_DIALOG, [
@@ -49,7 +51,6 @@ export class MainDialog extends ComponentDialog {
 					this.addQuestionStep.bind(this),
 					this.studyStep.bind(this),
 					this.finalStep.bind(this),
-					// this.finalStep.bind(this),
 				]),
 			);
 
@@ -117,34 +118,11 @@ export class MainDialog extends ComponentDialog {
 		if (scelta !== 0) {
 			return await step.next(step.result);
 		}
-
-		const buttons = [
-			{
-				type: ActionTypes.ImBack,
-				title: 'Text',
-				value: 'text',
-			},
-			{
-				type: ActionTypes.ImBack,
-				title: 'File',
-				value: 'file',
-			},
-		];
-
-		const card = CardFactory.heroCard(
-			'How do you intend to send me the new paragraphs?',
-			undefined,
-			buttons,
-		);
-
-		const reply = { attachments: [card] };
-
-		return await step.context.sendActivity(reply);
+		return await step.beginDialog(ADD_QUESTION_DIALOG);
 	}
 
 	private async studyStep(step: WaterfallStepContext) {
-		const { index: scelta } = step.result;
-		if (!scelta || scelta !== 1) return await step.next(step.result);
+		if (!step.result) return await step.replaceDialog(MAIN_DIALOG);
 		return await step.beginDialog(STUDY_DIALOG);
 	}
 

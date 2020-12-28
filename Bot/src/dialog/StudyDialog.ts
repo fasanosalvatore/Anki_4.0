@@ -8,27 +8,17 @@ import ffmpeg from 'fluent-ffmpeg';
 import { v4 as uuid } from 'uuid';
 import {
 	ActionTypes,
-	ActivityTypes,
 	CardFactory,
-	InputHints,
-	MessageFactory,
 	StatePropertyAccessor,
 	TurnContext,
 	UserState,
 } from 'botbuilder';
 import {
-	ChoiceFactory,
-	ChoicePrompt,
-	AttachmentPrompt,
 	ComponentDialog,
 	DialogSet,
 	DialogState,
-	DialogTurnResult,
 	DialogTurnStatus,
-	ListStyle,
-	TextPrompt,
 	WaterfallDialog,
-	WaterfallStepInfo,
 	WaterfallStepContext,
 } from 'botbuilder-dialogs';
 import { AttachmentTextPrompt } from './AttachmentTextPrompt';
@@ -37,8 +27,8 @@ import { Question, QuestionModel } from '../model/Question';
 ffmpeg.setFfmpegPath(path.join(__dirname.replace('dialog', 'lib'), '/ffmpeg'));
 
 const STUDY_DIALOG = 'STUDY_DIALOG';
+
 const MAIN_WATERFALL_DIALOG = 'WATERFALL_DIALOG';
-const TEXT_PROMPT = 'TEXT_PROMPT';
 const ATT_PROMPT = 'ATT_PROMPT';
 const USER_PROFILE_PROPERTY = 'USER_PROFILE_PROPERTY';
 
@@ -57,7 +47,7 @@ export class StudyDialog extends ComponentDialog {
 			new WaterfallDialog(MAIN_WATERFALL_DIALOG, [
 				this.questionStep.bind(this),
 				this.stringAnswerStep.bind(this),
-				this.audioAnswerStep.bind(this),
+				// this.audioAnswerStep.bind(this),
 			]),
 		);
 
@@ -121,52 +111,83 @@ export class StudyDialog extends ComponentDialog {
 	}
 
 	private async stringAnswerStep(step: WaterfallStepContext) {
-		if (typeof step.result !== 'string') return await step.next(step.result);
+		// if (typeof step.result !== 'string') return await step.next(step.result);
 		const questions: Question[] = step.values.questions;
 		let { index } = step.values;
-
 		const { result: answer } = step;
 		let message;
-		switch (answer) {
-			case 'stop':
-				return await step.endDialog(false);
-			case 'good':
-				questions[index].checks.shift();
-				questions[index].checks.push(true);
-				message = 'Bravo continua cosi';
-				break;
-			case 'bad':
-				questions[index].checks.shift();
-				questions[index].checks.push(false);
-				const audioName = await this.syntethizeAudio(questions[index].answer);
-				// const audio = fs.readFileSync(audioPath);
-				// const base64audio = Buffer.from(audio).toString('base64');
+		if (answer[0]) {
+			if (answer[0].contentType === 'audio/ogg') {
+				const msg = await this.recognizeAudio(answer[0]);
+				//CONTROLLO QUALITÀ RISPOSTA
+				await step.context.sendActivity(msg); //DA CANCELLARE
+				// const checkValue = await axios.post(process.env.CHECK_ML_ENDPOINT!, {
+				// 	user_answer: msg,
+				// 	bot_answer: question[index].answer,
+				// });
+				// if ((checkValue) => 0.8) {
+				// 	questions[index].checks.shift();
+				// 	questions[index].checks.push(true);
+				// 	message = 'Correct answer!';
+				// } else {
+				// 	questions[index].checks.shift();
+				// 	questions[index].checks.push(false);
+				// 	const audioName = await this.syntethizeAudio(questions[index].answer);
+				// 	message = {
+				// 		text: 'Unfortunately your answer is wrong, listen to the correct answer.',
+				// 		channelData: [
+				// 			{
+				// 				method: 'sendVoice',
+				// 				parameters: {
+				// 					voice: `https://2e56ba4b566e.ngrok.io/public/${audioName}`,
+				// 				},
+				// 			},
+				// 		],
+				// 	};
+				// }
+			}
+		} else {
+			switch (answer) {
+				case 'stop':
+					return await step.endDialog(false);
+				case 'good':
+					questions[index].checks.shift();
+					questions[index].checks.push(true);
+					message = 'Correct answer!';
+					break;
+				case 'bad':
+					questions[index].checks.shift();
+					questions[index].checks.push(false);
+					const audioName = await this.syntethizeAudio(questions[index].answer);
+					// const audio = fs.readFileSync(audioPath);
+					// const base64audio = Buffer.from(audio).toString('base64');
 
-				// const audioAtt = {
-				// 	name: 'message.ogg',
-				// 	contentType: 'audio/ogg',
-				// 	contentUrl: `data:audio/ogg;base64,${base64audio}`,
-				// };
+					// const audioAtt = {
+					// 	name: 'message.ogg',
+					// 	contentType: 'audio/ogg',
+					// 	contentUrl: `data:audio/ogg;base64,${base64audio}`,
+					// };
 
-				// message = { type: ActivityTypes.Message };
-				// message.text =
-				// 	'Unfortunately your answer is wrong, listen to the correct answer.';
-				// message.attachments = [audioAtt];
-				message = {
-					text: 'Unfortunately your answer is wrong, listen to the correct answer.',
-					channelData: [
-						{
-							method: 'sendVoice',
-							parameters: {
-								voice: `https://2e56ba4b566e.ngrok.io/public/${audioName}`,
+					// message = { type: ActivityTypes.Message };
+					// message.text =
+					// 	'Unfortunately your answer is wrong, listen to the correct answer.';
+					// message.attachments = [audioAtt];
+					message = {
+						text: 'Unfortunately your answer is wrong, listen to the correct answer.',
+						channelData: [
+							{
+								method: 'sendVoice',
+								parameters: {
+									voice: `https://2e56ba4b566e.ngrok.io/public/${audioName}`,
+								},
 							},
-						},
-					],
-				};
+						],
+					};
 
-				break;
-			default:
-				message = 'Al momento non posso fare il check';
+					break;
+				default:
+					message = 'Al momento non posso fare il check';
+			}
 		}
 		await step.context.sendActivity(message);
 		await QuestionModel.updateOne(
@@ -186,24 +207,47 @@ export class StudyDialog extends ComponentDialog {
 		});
 	}
 
-	private async audioAnswerStep(step: WaterfallStepContext) {
-		const answer = step.result[0];
-		if (answer.contentType === 'audio/ogg') {
-			const msg = await this.recognizeAudio(answer);
-			await step.context.sendActivity(msg);
-			//CONTROLLO QUALITÀ RISPOSTA
-			if (step.values.questions.length - 1 === step.values.index)
-				return await step.endDialog(true);
-			step.values.index++;
-		} else {
-			await step.context.sendActivity('Bisogna inviare un documento audio');
-		}
+	// private async audioAnswerStep(step: WaterfallStepContext) {
+	// 	const questions: Question[] = step.values.questions;
+	// 	let { index } = step.values;
+	// 	const answer = step.result[0];
+	// 	if (answer.contentType === 'audio/ogg') {
+	// 		const msg = await this.recognizeAudio(answer);
+	// 		//CONTROLLO QUALITÀ RISPOSTA
+	// 		await step.context.sendActivity(msg); //DA CANCELLARE
+	// 		const checkValue = await axios.post(process.env.CHECK_ML_ENDPOINT, {userAnswer: msg, correctAnswer: question[index].answer})
+	// 		if(checkValue => 0.8) {
+	// 			questions[index].checks.shift();
+	// 			questions[index].checks.push(true);
+	// 			message = 'Correct answer!';
+	// 		} else {
+	// 				questions[index].checks.shift();
+	// 				questions[index].checks.push(false);
+	// 				const audioName = await this.syntethizeAudio(questions[index].answer);
+	// 				message = {
+	// 					text: 'Unfortunately your answer is wrong, listen to the correct answer.',
+	// 					channelData: [
+	// 						{
+	// 							method: 'sendVoice',
+	// 							parameters: {
+	// 								voice: `https://2e56ba4b566e.ngrok.io/public/${audioName}`,
+	// 							},
+	// 						},
+	// 					],
+	// 				};
+	// 		}
+	// 		if (questions.length - 1 === index)
+	// 			return await step.endDialog(true);
+	// 		index++;
+	// 	} else {
+	// 		await step.context.sendActivity('Bisogna inviare un documento audio');
+	// 	}
 
-		return await step.replaceDialog(STUDY_DIALOG, {
-			index: step.values.index,
-			questions: step.values.questions,
-		});
-	}
+	// 	return await step.replaceDialog(STUDY_DIALOG, {
+	// 		index,
+	// 		questions
+	// 	});
+	// }
 
 	private async syntethizeAudio(answer: string) {
 		const speechConfig = sdk.SpeechConfig.fromSubscription(
