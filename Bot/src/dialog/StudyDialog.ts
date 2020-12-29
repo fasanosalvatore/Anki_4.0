@@ -141,14 +141,16 @@ export class StudyDialog extends ComponentDialog {
 				} else {
 					questions[index].checks.shift();
 					questions[index].checks.push(false);
-					const audioName = await this.syntethizeAudio(questions[index].answer);
+					const { localPath, localName: audioName } = await this.syntethizeAudio(
+						questions[index].answer,
+					);
 					message = {
 						text: 'Unfortunately your answer is wrong, listen to the correct answer.',
 						channelData: [
 							{
 								method: 'sendVoice',
 								parameters: {
-									voice: `https://7167a46c22ce.ngrok.io/public/${audioName}`,
+									voice: `${process.env.SERVER_URL}/public/${audioName}`,
 								},
 							},
 						],
@@ -167,7 +169,9 @@ export class StudyDialog extends ComponentDialog {
 				case 'bad':
 					questions[index].checks.shift();
 					questions[index].checks.push(false);
-					const audioName = await this.syntethizeAudio(questions[index].answer);
+					const { localPath, localName: audioName } = await this.syntethizeAudio(
+						questions[index].answer,
+					);
 					// const audio = fs.readFileSync(audioPath);
 					// const base64audio = Buffer.from(audio).toString('base64');
 
@@ -188,11 +192,14 @@ export class StudyDialog extends ComponentDialog {
 							{
 								method: 'sendVoice',
 								parameters: {
-									voice: `https://7167a46c22ce.ngrok.io/public/${audioName}`,
+									voice: `${process.env.SERVER_URL}/public/${audioName}`,
 								},
 							},
 						],
 					};
+					setTimeout(() => {
+						fs.unlink(localPath, () => {});
+					}, 30000);
 
 					break;
 				default:
@@ -240,7 +247,7 @@ export class StudyDialog extends ComponentDialog {
 	// 						{
 	// 							method: 'sendVoice',
 	// 							parameters: {
-	// 								voice: `https://2e56ba4b566e.ngrok.io/public/${audioName}`,
+	// 								voice: `${process.env.SERVER_URL}/public/${audioName}`,
 	// 							},
 	// 						},
 	// 					],
@@ -335,8 +342,9 @@ export class StudyDialog extends ComponentDialog {
 			.outputOptions('-acodec libopus')
 			.format('ogg');
 		await promisifyCommand(command, id)();
+		fs.unlink(path.join(dir, 'message.wav'), () => {});
 
-		return id + '.ogg';
+		return { localPath: path.join(dir, id + '.ogg'), localName: id + '.ogg' };
 	}
 
 	private async recognizeAudio(audio: any) {

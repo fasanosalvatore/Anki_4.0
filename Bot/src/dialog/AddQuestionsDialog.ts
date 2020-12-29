@@ -73,26 +73,28 @@ export class AddQuestionDialog extends ComponentDialog {
 	private async firstStep(step: WaterfallStepContext) {
 		return await step.prompt(ATT_PROMPT, {
 			prompt:
-				'Send us the text from which to extract the questions as a message or attachment',
+				'Send us the text from which to extract the questions as a message or txt attachment',
 		});
 	}
 
 	private async secondStep(step: WaterfallStepContext) {
-		const { result: text } = step;
-		try {
-			axios.post(process.env.QNA_FUNCTION_ENDPOINT!, {
-				text,
-				userId: step.context.activity.from.id,
-			});
-			await step.context.sendActivity(
-				'Questions will be correctly generated between which second, good luck!',
-			);
-		} catch (err) {
-			console.log(err);
-			await step.context.sendActivity(
-				'Forgive me, there must have been some problem with the network, please try again soon.',
-			);
+		let { result: text } = step;
+		if (Array.isArray(text)) {
+			if (text[0].contentType === 'text/plain') {
+				const file = await this.downloadAttachmentAndWrite(text[0]);
+				text = fs.readFileSync(file?.localPath as string, 'utf8').toString();
+				fs.unlink(file?.localPath as PathLike, () => {});
+			}
 		}
+
+		axios.post(process.env.QNA_FUNCTION_ENDPOINT!, {
+			text,
+			userId: step.context.activity.from.id,
+		});
+		await step.context.sendActivity(
+			'Questions will be correctly generated between which second, good luck!',
+		);
+
 		return await step.prompt(CHOICE_PROMPT, {
 			prompt: 'Would you like to enter other questions?',
 			choices: ChoiceFactory.toChoices(['Yes', 'No, thanks']),
@@ -107,5 +109,28 @@ export class AddQuestionDialog extends ComponentDialog {
 			return await step.endDialog();
 		}
 		return await step.replaceDialog(ADD_QUESTION_DIALOG);
+	}
+
+	private async downloadAttachmentAndWrite(attachment: any) {
+		const url = attachment.contentUrl;
+
+		// Local file path for the bot to save the attachment.
+		const localFileName = path.join(__dirname, attachment.name);
+
+		try {
+			// arraybuffer is necessary for images
+			const response = await axios.get(url, { responseType: 'arraybuffer' });
+
+			fs.writeFileSync(localFileName, response.data);
+		} catch (error) {
+			console.error(error);
+			return undefined;
+		}
+		// If no error was thrown while writing to disk, return the attachment's name
+		// and localFilePath for the response back to the user.
+		return {
+			fileName: attachment.name,
+			localPath: localFileName,
+		};
 	}
 }
