@@ -117,42 +117,43 @@ export class StudyDialog extends ComponentDialog {
 		let message;
 		if (Array.isArray(answer)) {
 			if (answer[0].contentType === 'audio/ogg') {
-				const msg = await this.recognizeAudio(answer[0]);
+				const msg: string = await this.recognizeAudio(answer[0]);
 				//CONTROLLO QUALITÀ RISPOSTA
 				// await step.context.sendActivity(msg); //DA CANCELLARE
-				// const rawCheckValue = await axios.post(
-				// 	process.env.CHECK_ML_ENDPOINT!,
-				// 	{
-				// 		user_answer: msg,
-				// 		bot_answer: question[index].answer,
-				// 	},
-				// 	{
-				// 		headers: {
-				// 			Authorization: `Bearer ${process.env.CHECK_ML_TOKEN}`,
-				// 		},
-				// 	},
-				// );
+				const rawCheckValue = await axios.post(
+					process.env.CHECK_ML_ENDPOINT!,
+					{
+						user_answer: msg.toLowerCase(),
+						bot_answer: questions[index].answer.toLowerCase(),
+					},
+					{
+						headers: {
+							Authorization: `Bearer ${process.env.CHECK_ML_TOKEN}`,
+						},
+					},
+				);
+				const checkValue = rawCheckValue.data.result as number;
 				// const checkValue = JSON.parse(rawCheckValue.data).result
-				// if ((checkValue) => 0.8) {
-				// 	questions[index].checks.shift();
-				// 	questions[index].checks.push(true);
-				// 	message = 'Correct answer!';
-				// } else {
-				// 	questions[index].checks.shift();
-				// 	questions[index].checks.push(false);
-				// 	const audioName = await this.syntethizeAudio(questions[index].answer);
-				// 	message = {
-				// 		text: 'Unfortunately your answer is wrong, listen to the correct answer.',
-				// 		channelData: [
-				// 			{
-				// 				method: 'sendVoice',
-				// 				parameters: {
-				// 					voice: `https://2e56ba4b566e.ngrok.io/public/${audioName}`,
-				// 				},
-				// 			},
-				// 		],
-				// 	};
-				// }
+				if (checkValue >= 0.8) {
+					questions[index].checks.shift();
+					questions[index].checks.push(true);
+					message = 'Correct answer!';
+				} else {
+					questions[index].checks.shift();
+					questions[index].checks.push(false);
+					const audioName = await this.syntethizeAudio(questions[index].answer);
+					message = {
+						text: 'Unfortunately your answer is wrong, listen to the correct answer.',
+						channelData: [
+							{
+								method: 'sendVoice',
+								parameters: {
+									voice: `https://7167a46c22ce.ngrok.io/public/${audioName}`,
+								},
+							},
+						],
+					};
+				}
 			}
 		} else {
 			switch (answer) {
@@ -180,13 +181,14 @@ export class StudyDialog extends ComponentDialog {
 					// message.text =
 					// 	'Unfortunately your answer is wrong, listen to the correct answer.';
 					// message.attachments = [audioAtt];
+
 					message = {
 						text: 'Unfortunately your answer is wrong, listen to the correct answer.',
 						channelData: [
 							{
 								method: 'sendVoice',
 								parameters: {
-									voice: `https://2e56ba4b566e.ngrok.io/public/${audioName}`,
+									voice: `https://7167a46c22ce.ngrok.io/public/${audioName}`,
 								},
 							},
 						],
@@ -383,7 +385,7 @@ export class StudyDialog extends ComponentDialog {
 				process.env.SPEECH_API,
 				process.env.SPEECH_LOCATION,
 			);
-			speechConfig.speechRecognitionLanguage = 'it-IT';
+			speechConfig.speechRecognitionLanguage = 'en-GB';
 			let recognizer = new sdk.SpeechRecognizer(speechConfig, audioConfig);
 
 			const recognize = () => {

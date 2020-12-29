@@ -79,28 +79,13 @@ export class AddQuestionDialog extends ComponentDialog {
 
 	private async secondStep(step: WaterfallStepContext) {
 		const { result: text } = step;
-		//Effettuare qui la chiamata all'api per ottenere le domande/risposte e salvarle nel database
 		try {
-			const rawQuestions = await axios.post(
-				process.env.QNA_ML_ENDPOINT!,
-				{ text },
-				{
-					headers: {
-						Authorization: `Bearer ${process.env.QNA_ML_TOKEN}`,
-					},
-				},
-			);
-			const questions: Question[] = JSON.parse(rawQuestions.data).result;
-			questions.map(async (qna: Question) => {
-				const { question, answer } = qna;
-				await QuestionModel.create({
-					userId: step.context.activity.from.id,
-					question,
-					answer,
-				});
+			axios.post(process.env.QNA_FUNCTION_ENDPOINT!, {
+				text,
+				userId: step.context.activity.from.id,
 			});
 			await step.context.sendActivity(
-				'The questions have been correctly generated, good luck!',
+				'Questions will be correctly generated between which second, good luck!',
 			);
 		} catch (err) {
 			console.log(err);
