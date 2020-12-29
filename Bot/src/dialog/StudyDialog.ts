@@ -251,19 +251,17 @@ export class StudyDialog extends ComponentDialog {
 
 	private newCheckDate(question: Question) {
 		if (!question.checks[4])
-			return new Date(question.nextCheckDate?.getTime() + 24 * 60 * 60 * 1000);
+			return new Date(new Date(Date.now()).getTime() + 24 * 60 * 60 * 1000);
 		const { checks } = question;
 		checks.reverse();
 		let count = 0;
-		for (let check in checks) {
-			if (!check) break;
-			count++;
+		for (let check of checks) {
+			if (check === false) break;
+			else count++;
 		}
 		checks.reverse();
 		const ms =
-			new Date(question.nextCheckDate).getTime() +
-			2 ** (count - 1) * 24 * 60 * 60 * 1000;
-		console.log(2 ** (count - 1));
+			new Date(Date.now()).getTime() + 2 ** (count - 1) * 24 * 60 * 60 * 1000;
 		return new Date(ms);
 	}
 
