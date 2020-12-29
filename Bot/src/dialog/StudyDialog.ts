@@ -111,7 +111,6 @@ export class StudyDialog extends ComponentDialog {
 	}
 
 	private async stringAnswerStep(step: WaterfallStepContext) {
-		// if (typeof step.result !== 'string') return await step.next(step.result);
 		const questions: Question[] = step.values.questions;
 		let { index } = step.values;
 		const { result: answer } = step;
@@ -120,11 +119,20 @@ export class StudyDialog extends ComponentDialog {
 			if (answer[0].contentType === 'audio/ogg') {
 				const msg = await this.recognizeAudio(answer[0]);
 				//CONTROLLO QUALITÀ RISPOSTA
-				await step.context.sendActivity(msg); //DA CANCELLARE
-				// const checkValue = await axios.post(process.env.CHECK_ML_ENDPOINT!, {
-				// 	user_answer: msg,
-				// 	bot_answer: question[index].answer,
-				// });
+				// await step.context.sendActivity(msg); //DA CANCELLARE
+				// const rawCheckValue = await axios.post(
+				// 	process.env.CHECK_ML_ENDPOINT!,
+				// 	{
+				// 		user_answer: msg,
+				// 		bot_answer: question[index].answer,
+				// 	},
+				// 	{
+				// 		headers: {
+				// 			Authorization: `Bearer ${process.env.CHECK_ML_TOKEN}`,
+				// 		},
+				// 	},
+				// );
+				// const checkValue = JSON.parse(rawCheckValue.data).result
 				// if ((checkValue) => 0.8) {
 				// 	questions[index].checks.shift();
 				// 	questions[index].checks.push(true);

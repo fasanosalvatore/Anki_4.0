@@ -86,7 +86,7 @@ export class AddQuestionDialog extends ComponentDialog {
 				{ text },
 				{
 					headers: {
-						Authorization: 'Bearer Ehnc2vSj1kBXrgqa88gDvHCbBZ32usWp',
+						Authorization: `Bearer ${process.env.QNA_ML_TOKEN}`,
 					},
 				},
 			);
