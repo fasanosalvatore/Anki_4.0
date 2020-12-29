@@ -2,7 +2,7 @@
     "computeType": "aci",
     "containerResourceRequirements":
     {
-        "cpu": 3.5,
+        "cpu": 3,
         "memoryInGB": 5.0
     },
     "authEnabled": true,

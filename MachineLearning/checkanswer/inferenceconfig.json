@@ -9,7 +9,7 @@
             "sharedVolumes": true,
             "shmSize": null
         },
-        "name": "checkanswer",
+        "name": "checkanswerbase",
         "python": {
             "baseCondaEnvironment": null,
             "condaDependencies": {

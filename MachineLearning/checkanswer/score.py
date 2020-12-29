@@ -397,7 +397,7 @@ class EncodeDataset(Dataset):
 def init():
   global model
   global analyzer
-  model_path = os.path.join(os.getenv('AZUREML_MODEL_DIR'), './model/')
+  model_path = os.path.join(os.getenv('AZUREML_MODEL_DIR'), 'models/')
   model = SentenceTransformer(model_path)
   analyzer = SentimentIntensityAnalyzer()
 
@@ -415,13 +415,12 @@ def run(data):
         print(f"sentiment : {user_sentiment} - 0.15 <= {bot_sentiment} <= {user_sentiment} + 0.15", not (user_sentiment - 0.15 <= bot_sentiment <= user_sentiment + 0.15))
         if not (user_sentiment - 0.15 <= bot_sentiment <= user_sentiment + 0.15) :
             print("result : 0")
-            return 0
+            return {"result":0,"user_sentimet":user_sentiment,"bot_sentimet":bot_sentiment,"error":None}
         emb1 = model.encode(user_answer)
         emb2 = model.encode(bot_answer)
         cos_sim = pytorch_cos_sim(emb1, emb2)[0][0].item()
 
-        print(f"result : {cos_sim}")
-        return cos_sim
+        return {"result":cos_sim,"user_sentimet":user_sentiment,"bot_sentimet":bot_sentiment,"error":None}
     except Exception as e:
         error = str(e)
-        return error
+        return {"result":None,"user_sentimet":None,"bot_sentimet":None,"error":error}

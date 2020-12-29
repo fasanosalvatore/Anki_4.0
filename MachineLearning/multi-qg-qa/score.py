@@ -229,7 +229,7 @@ def run(data):
         print(data["text"])
         result = npl(data["text"])
         print("RESULT", result)
-        return json.dumps({"result": result,"error":None})
+        return {"result": result,"error":None}
     except Exception as e:
         error = str(e)
-        return json.dumps({"result": None,"error":error})
+        return {"result": None,"error":error}

@@ -2,9 +2,9 @@ import requests
 import json
 
 # URL for the web service
-scoring_uri = 'http://d9c27bed-a9c1-4c09-8ded-58f25a8c58fd.westeurope.azurecontainer.io/score'
+scoring_uri = 'http://8467e0b1-201e-4679-ab53-1310c5b3e650.westeurope.azurecontainer.io/score'
 # If the service is authenticated, set the key or token
-key = 'Ehnc2vSj1kBXrgqa88gDvHCbBZ32usWp'
+key = 'S0BgLMWcFHlAaRGi4C6ClwvethaInlnb'
 
 # Two sets of data to score, so we get two results back
 data = {'text':"The organization that provides cloud-based IT resources is the cloud provider. When assuming the role of cloud provider, an organization is responsible for making cloud services available to cloud consumers, as per agreed upon SLA guarantees. The cloud provider is further tasked with any required management and administrative duties to ensure the on-going operation of the overall cloud infrastructure. Cloud providers normally own the IT resources that are made available for lease by cloud consumers; however, some cloud providers also “resell” IT resources leased from other cloud providers"}
