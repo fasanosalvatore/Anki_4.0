@@ -46,7 +46,7 @@ export class StudyDialog extends ComponentDialog {
 		this.addDialog(new AttachmentTextPrompt(ATT_PROMPT)).addDialog(
 			new WaterfallDialog(MAIN_WATERFALL_DIALOG, [
 				this.questionStep.bind(this),
-				this.stringAnswerStep.bind(this),
+				this.answerStep.bind(this),
 				// this.audioAnswerStep.bind(this),
 			]),
 		);
@@ -110,7 +110,7 @@ export class StudyDialog extends ComponentDialog {
 		});
 	}
 
-	private async stringAnswerStep(step: WaterfallStepContext) {
+	private async answerStep(step: WaterfallStepContext) {
 		const questions: Question[] = step.values.questions;
 		let { index } = step.values;
 		const { result: answer } = step;
@@ -118,44 +118,42 @@ export class StudyDialog extends ComponentDialog {
 		if (Array.isArray(answer)) {
 			if (answer[0].contentType === 'audio/ogg') {
 				const msg: string = await this.recognizeAudio(answer[0]);
-				//CONTROLLO QUALITÀ RISPOSTA
-				// await step.context.sendActivity(msg); //DA CANCELLARE
-				const rawCheckValue = await axios.post(
-					process.env.CHECK_ML_ENDPOINT!,
-					{
-						user_answer: msg.toLowerCase(),
-						bot_answer: questions[index].answer.toLowerCase(),
-					},
-					{
-						headers: {
-							Authorization: `Bearer ${process.env.CHECK_ML_TOKEN}`,
-						},
-					},
-				);
-				const checkValue = rawCheckValue.data.result as number;
-				// const checkValue = JSON.parse(rawCheckValue.data).result
-				if (checkValue >= 0.8) {
-					questions[index].checks.shift();
-					questions[index].checks.push(true);
-					message = 'Correct answer!';
-				} else {
-					questions[index].checks.shift();
-					questions[index].checks.push(false);
-					const { localPath, localName: audioName } = await this.syntethizeAudio(
-						questions[index].answer,
-					);
-					message = {
-						text: 'Unfortunately your answer is wrong, listen to the correct answer.',
-						channelData: [
-							{
-								method: 'sendVoice',
-								parameters: {
-									voice: `${process.env.SERVER_URL}/public/${audioName}`,
-								},
-							},
-						],
-					};
-				}
+				message = await this.checkAnswer(msg, questions[index]);
+				// const rawCheckValue = await axios.post(
+				// 	process.env.CHECK_ML_ENDPOINT!,
+				// 	{
+				// 		user_answer: msg.toLowerCase(),
+				// 		bot_answer: questions[index].answer.toLowerCase(),
+				// 	},
+				// 	{
+				// 		headers: {
+				// 			Authorization: `Bearer ${process.env.CHECK_ML_TOKEN}`,
+				// 		},
+				// 	},
+				// );
+				// const checkValue = rawCheckValue.data.result as number;
+				// if (checkValue >= 0.8) {
+				// 	questions[index].checks.shift();
+				// 	questions[index].checks.push(true);
+				// 	message = 'Correct answer!';
+				// } else {
+				// 	questions[index].checks.shift();
+				// 	questions[index].checks.push(false);
+				// 	const { localPath, localName: audioName } = await this.syntethizeAudio(
+				// 		questions[index].answer,
+				// 	);
+				// 	message = {
+				// 		text: 'Unfortunately your answer is wrong, listen to the correct answer.',
+				// 		channelData: [
+				// 			{
+				// 				method: 'sendVoice',
+				// 				parameters: {
+				// 					voice: `${process.env.SERVER_URL}/public/${audioName}`,
+				// 				},
+				// 			},
+				// 		],
+				// 	};
+				// }
 			}
 		} else {
 			switch (answer) {
@@ -172,19 +170,6 @@ export class StudyDialog extends ComponentDialog {
 					const { localPath, localName: audioName } = await this.syntethizeAudio(
 						questions[index].answer,
 					);
-					// const audio = fs.readFileSync(audioPath);
-					// const base64audio = Buffer.from(audio).toString('base64');
-
-					// const audioAtt = {
-					// 	name: 'message.ogg',
-					// 	contentType: 'audio/ogg',
-					// 	contentUrl: `data:audio/ogg;base64,${base64audio}`,
-					// };
-
-					// message = { type: ActivityTypes.Message };
-					// message.text =
-					// 	'Unfortunately your answer is wrong, listen to the correct answer.';
-					// message.attachments = [audioAtt];
 
 					message = {
 						text: 'Unfortunately your answer is wrong, listen to the correct answer.',
@@ -203,7 +188,7 @@ export class StudyDialog extends ComponentDialog {
 
 					break;
 				default:
-					message = 'Al momento non posso fare il check';
+					message = await this.checkAnswer(answer, questions[index]);
 			}
 		}
 		await step.context.sendActivity(message);
@@ -265,6 +250,46 @@ export class StudyDialog extends ComponentDialog {
 	// 		questions
 	// 	});
 	// }
+
+	private async checkAnswer(answer: string, question: Question) {
+		const message = {};
+		const rawCheckValue = await axios.post(
+			process.env.CHECK_ML_ENDPOINT!,
+			{
+				user_answer: answer.toLowerCase(),
+				bot_answer: question.answer.toLowerCase(),
+			},
+			{
+				headers: {
+					Authorization: `Bearer ${process.env.CHECK_ML_TOKEN}`,
+				},
+			},
+		);
+		const checkValue = rawCheckValue.data.result as number;
+		if (checkValue >= 0.8) {
+			question.checks.shift();
+			question.checks.push(true);
+			message = 'Correct answer!';
+		} else {
+			question.checks.shift();
+			question.checks.push(false);
+			const { localPath, localName: audioName } = await this.syntethizeAudio(
+				question.answer,
+			);
+			message = {
+				text: 'Unfortunately your answer is wrong, listen to the correct answer.',
+				channelData: [
+					{
+						method: 'sendVoice',
+						parameters: {
+							voice: `${process.env.SERVER_URL}/public/${audioName}`,
+						},
+					},
+				],
+			};
+		}
+		return message;
+	}
 
 	private newCheckDate(question: Question) {
 		if (!question.checks[4])
