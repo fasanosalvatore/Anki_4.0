@@ -69,10 +69,15 @@ export class StudyDialog extends ComponentDialog {
 	}
 
 	private async questionStep(step: WaterfallStepContext) {
-		// const questions = step.options.questions || await QuestionModel.find({userId: step.context.activity.from.id, nextCheckDate: {$lte: new Date()}})
-		const questions: Question[] =
+		const questions =
 			step.options.questions ||
-			(await QuestionModel.find({ nextCheckDate: { $lte: new Date() } }));
+			(await QuestionModel.find({
+				userId: step.context.activity.from.id,
+				nextCheckDate: { $lte: new Date() },
+			}));
+		// const questions: Question[] =
+		// 	step.options.questions ||
+		// 	(await QuestionModel.find({ nextCheckDate: { $lte: new Date() } }));
 		if (questions.length === 0) {
 			await step.context.sendActivity('There are no questions for today!');
 			return await step.endDialog(true);
@@ -252,7 +257,7 @@ export class StudyDialog extends ComponentDialog {
 	// }
 
 	private async checkAnswer(answer: string, question: Question) {
-		const message = {};
+		let message = {};
 		const rawCheckValue = await axios.post(
 			process.env.CHECK_ML_ENDPOINT!,
 			{
@@ -324,8 +329,8 @@ export class StudyDialog extends ComponentDialog {
 		const syn = (answer: string) => {
 			return new Promise((resolve, reject) => {
 				synthesizer.speakSsmlAsync(
-					`<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="en-US">
-  					<voice name="en-US-AriaNeural">
+					`<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="en-GB">
+  					<voice name="en-GB-MiaNeural">
     					<mstts:express-as style="cheerful">
       					${answer}
 							</mstts:express-as>
