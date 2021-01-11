@@ -329,10 +329,9 @@ export class StudyDialog extends ComponentDialog {
 		const syn = (answer: string) => {
 			return new Promise((resolve, reject) => {
 				synthesizer.speakSsmlAsync(
-					`<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="en-GB">
-  					<voice name="en-GB-MiaNeural">
-    					<mstts:express-as style="cheerful">
-      					${answer}
+					`<speak xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="http://www.w3.org/2001/mstts" xmlns:emo="http://www.w3.org/2009/10/emotionml" version="1.0" xml:lang="en-US"><voice name="en-US-JennyNeural"><mstts:express-as style="customerservice"><prosody rate="-10%" pitch="0%">
+									${answer}
+								</prosody>
 							</mstts:express-as>
 						</voice>
 					</speak>`,
