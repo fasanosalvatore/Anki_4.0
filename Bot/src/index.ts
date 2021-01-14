@@ -13,6 +13,7 @@ import { Bot } from './bot/Bot';
 import { MainDialog } from './dialog/MainDialog';
 import { mongoose } from '@typegoose/typegoose';
 import path from 'path';
+import { FirstDialog } from './dialog/FirstDialog';
 
 mongoose
 	.connect(
@@ -78,7 +79,8 @@ adapter.onTurnError = async (context, error) => {
 const memoryStorage = new MemoryStorage();
 const conversationState = new ConversationState(memoryStorage);
 const userState = new UserState(memoryStorage);
-const dialog = new MainDialog(userState);
+// const dialog = new MainDialog(userState);
+const dialog = new FirstDialog(userState);
 const conversationReferences = {};
 const bot = new Bot(
 	conversationState,

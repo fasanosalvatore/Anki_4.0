@@ -69,11 +69,14 @@ export class StudyDialog extends ComponentDialog {
 	}
 
 	private async questionStep(step: WaterfallStepContext) {
+		// @ts-ignore
+		const deckName = step.options.deckName;
 		const questions =
 			step.options.questions ||
 			(await QuestionModel.find({
 				userId: step.context.activity.from.id,
 				nextCheckDate: { $lte: new Date() },
+				deckName,
 			}));
 		// const questions: Question[] =
 		// 	step.options.questions ||
@@ -124,41 +127,6 @@ export class StudyDialog extends ComponentDialog {
 			if (answer[0].contentType === 'audio/ogg') {
 				const msg: string = await this.recognizeAudio(answer[0]);
 				message = await this.checkAnswer(msg, questions[index]);
-				// const rawCheckValue = await axios.post(
-				// 	process.env.CHECK_ML_ENDPOINT!,
-				// 	{
-				// 		user_answer: msg.toLowerCase(),
-				// 		bot_answer: questions[index].answer.toLowerCase(),
-				// 	},
-				// 	{
-				// 		headers: {
-				// 			Authorization: `Bearer ${process.env.CHECK_ML_TOKEN}`,
-				// 		},
-				// 	},
-				// );
-				// const checkValue = rawCheckValue.data.result as number;
-				// if (checkValue >= 0.8) {
-				// 	questions[index].checks.shift();
-				// 	questions[index].checks.push(true);
-				// 	message = 'Correct answer!';
-				// } else {
-				// 	questions[index].checks.shift();
-				// 	questions[index].checks.push(false);
-				// 	const { localPath, localName: audioName } = await this.syntethizeAudio(
-				// 		questions[index].answer,
-				// 	);
-				// 	message = {
-				// 		text: 'Unfortunately your answer is wrong, listen to the correct answer.',
-				// 		channelData: [
-				// 			{
-				// 				method: 'sendVoice',
-				// 				parameters: {
-				// 					voice: `${process.env.SERVER_URL}/public/${audioName}`,
-				// 				},
-				// 			},
-				// 		],
-				// 	};
-				// }
 			}
 		} else {
 			switch (answer) {

@@ -71,6 +71,10 @@ export class AddQuestionDialog extends ComponentDialog {
 	}
 
 	private async firstStep(step: WaterfallStepContext) {
+		// @ts-ignore
+		const deckName = step.options.deckName;
+		// @ts-ignore
+		step.values.deckName = deckName;
 		return await step.prompt(ATT_PROMPT, {
 			prompt:
 				'Send us the text from which to extract the questions as a message or txt attachment',
@@ -78,6 +82,8 @@ export class AddQuestionDialog extends ComponentDialog {
 	}
 
 	private async secondStep(step: WaterfallStepContext) {
+		// @ts-ignore
+		const deckName = step.values.deckName;
 		let { result: text } = step;
 		if (Array.isArray(text)) {
 			if (text[0].contentType === 'text/plain') {
@@ -90,6 +96,7 @@ export class AddQuestionDialog extends ComponentDialog {
 		axios.post(process.env.QNA_FUNCTION_ENDPOINT!, {
 			text,
 			userId: step.context.activity.from.id,
+			deckName,
 		});
 		await step.context.sendActivity(
 			'Questions will be correctly generated between which second, good luck!',
@@ -103,12 +110,14 @@ export class AddQuestionDialog extends ComponentDialog {
 	}
 
 	private async finalStep(step: WaterfallStepContext) {
+		// @ts-ignore
+		const deckName = step.values.deckName;
 		const { index: scelta } = step.result;
 		if (scelta === 1) {
 			await step.context.sendActivity("Let's go back to the main menu.");
 			return await step.endDialog();
 		}
-		return await step.replaceDialog(ADD_QUESTION_DIALOG);
+		return await step.replaceDialog(ADD_QUESTION_DIALOG, { deckName });
 	}
 
 	private async downloadAttachmentAndWrite(attachment: any) {

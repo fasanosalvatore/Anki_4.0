@@ -4,8 +4,8 @@ export class Question {
 	@prop({ required: true })
 	public userId!: string;
 
-	@prop({ default: 'default' })
-	public topic?: string;
+	@prop({ required: true })
+	public deckName?: string;
 
 	@prop({ required: true })
 	public question!: string;

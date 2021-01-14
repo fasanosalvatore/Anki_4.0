@@ -46,7 +46,6 @@ export class MainDialog extends ComponentDialog {
 			.addDialog(new StudyDialog(userState))
 			.addDialog(
 				new WaterfallDialog(MAIN_WATERFALL_DIALOG, [
-					this.welcomeStep.bind(this),
 					this.initialStep.bind(this),
 					this.addQuestionStep.bind(this),
 					this.studyStep.bind(this),
@@ -71,31 +70,14 @@ export class MainDialog extends ComponentDialog {
 		}
 	}
 
-	private async welcomeStep(step: WaterfallStepContext) {
-		const user = await this.userProfileAccessor.get(step.context);
-		if (user) return await step.next();
-		const messageText =
-			"It seems to me this is the first time we meet, what's your name?";
-
-		const promptMessage = MessageFactory.text(
-			messageText,
-			messageText,
-			InputHints.ExpectingInput,
-		);
-
-		return await step.prompt(TEXT_PROMPT, {
-			prompt: promptMessage,
-		});
-	}
-
 	private async initialStep(step: WaterfallStepContext) {
-		const user = await this.userProfileAccessor.get(step.context);
-		if (!user) {
-			await this.userProfileAccessor.set(step.context, step.result);
-		}
-		const userName = user || step.result;
+		// @ts-ignore
+		const deckName = step.options.deckName;
+		// @ts-ignore
+		step.values.deckName = deckName;
+		const userName = await this.userProfileAccessor.get(step.context);
 
-		const messageText = `Hi ${userName}! What do you want to do?`;
+		const messageText = `Hi ${userName}! I remind you that you are in the ${deckName} deck. What do you want to do?`;
 
 		const promptMessage = MessageFactory.text(
 			messageText,
@@ -108,22 +90,27 @@ export class MainDialog extends ComponentDialog {
 			choices: ChoiceFactory.toChoices([
 				'I want to add new questions',
 				"I think it's time to study",
+				'I want to select another deck',
 			]),
 			style: ListStyle.suggestedAction,
 		});
 	}
 
 	private async addQuestionStep(step: WaterfallStepContext) {
+		// @ts-ignore
+		const deckName = step.values.deckName;
 		const { index: scelta } = step.result;
-		if (scelta !== 0) {
-			return await step.next(step.result);
-		}
-		return await step.beginDialog(ADD_QUESTION_DIALOG);
+		if (scelta !== 0) return await step.next(step.result);
+		return await step.beginDialog(ADD_QUESTION_DIALOG, { deckName });
 	}
 
 	private async studyStep(step: WaterfallStepContext) {
 		if (!step.result) return await step.replaceDialog(MAIN_DIALOG);
-		return await step.beginDialog(STUDY_DIALOG);
+		const { index: scelta } = step.result;
+		if (scelta !== 1) return await step.endDialog();
+		// @ts-ignore
+		const deckName = step.values.deckName;
+		return await step.beginDialog(STUDY_DIALOG, { deckName });
 	}
 
 	private async finalStep(step: WaterfallStepContext) {

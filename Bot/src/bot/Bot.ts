@@ -15,17 +15,18 @@ import axios from 'axios';
 import * as sdk from 'microsoft-cognitiveservices-speech-sdk';
 import ffmpeg from 'fluent-ffmpeg';
 import { MainDialog } from '../dialog/MainDialog';
+import { FirstDialog } from '../dialog/FirstDialog';
 
 export class Bot extends ActivityHandler {
 	private conversationState: ConversationState;
 	private userState: UserState;
-	private dialog: MainDialog;
+	private dialog: FirstDialog;
 	private dialogState: StatePropertyAccessor<any>;
 	private conversationReferences;
 	constructor(
 		conversationState: ConversationState,
 		userState: UserState,
-		dialog: MainDialog,
+		dialog: FirstDialog,
 		conversationReferences: any,
 	) {
 		super();
