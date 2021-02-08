@@ -107,6 +107,7 @@ Inside, in the **endpoint** section you can view the **links** to query the gene
 Add the related links to the endpoints in the `.env`, you can find this informations in `consume` field.
 
 The `CHECK_ML_ENDPOINT` field for the model dedicated to check answer.
+
 The `CHECK_ML_TOKEN` field for the access to the model dedicated to check answer.
 
 
