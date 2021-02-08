@@ -41,6 +41,14 @@ Bot Channels Registration allows to register a bot in Microsoft Azure Portal wit
 1. Click on 'Manage' next to the 'Microsoft App ID' field and click on 'New client secret' bottom.
 1. Save the value field of the created key in the file .env in ```MicrosoftAppPassword``` field.
 
+### Text To Speech/Speech To Text
+1. Using the search bar find 'Speech'.
+2. Provide the details for the Subscription, Resource Group, the name and select the Free tier F0 in the 'Pricing tier' field.
+3. Check the box and create. When the resource is been correctly deployed go to resource.
+4. In the lateral menu choose 'Keys and Endpoint', click on 'Show keys'.
+5. Copy one the two keys and save it in the file .env in ```SPEECH_API``` field.
+6. Copy position and save it in the file .env in ```SPEECH_LOCATION``` field.
+
 ### Function App
 [Azure Function App](https://docs.microsoft.com/en-us/azure/azure-functions/functions-overview) is the Serverless Computing service offered by Azure that allows to run blocks of code called function.
 Anki 4.0 uses a function to work with QuestionAndAnswerML.
@@ -97,11 +105,6 @@ Now both containers have been deployed. It may take several minutes for them to 
 Through the `Studio web URL` field inside the resource it is possible to monitor the cotainers and the registered models.
 Inside, in the **endpoint** section you can view the **links** to query the generated endpoint.
 
-
-
-
-
-
 ## Execution
 A bot developed with Azure Bot Service can be hosted both on Cloud using Web App service and in local using [ngrok](https://ngrok.com/). In this case the bot work well only using Telegram because the Bot Emulator doesn/t provide all necessary functionalities. The bot will work in the same way but is clearly better to run the bot in a local environment while testing.
 ### Local hosting
@@ -110,11 +113,12 @@ A bot developed with Azure Bot Service can be hosted both on Cloud using Web App
 ```sh
 $ ./ngrok http -host-header=rewrite 3978
 ```
-2. Open a terminal in ISISLabHelpDesk folder and start the bot
+2. Copy the URL showed in terminal by ngrok and save it in _.env_ file in `SERVER_URL`.
+3. Open a terminal in Bot folder and start the bot
 ```sh
 $ npm start
 ```
-3. Go to the Bot Channels Registration resource using the Azure Portal:
+1. Go to the Bot Channels Registration resource using the Azure Portal:
     * Search BotFather in Telegram
     * Start the conversation and digit ```/newbot```, set a correct name and copy the API Key.
     * In the lateral menu choose 'Channels', select Telegram in the list and paste the API Key copied in the previous step.
