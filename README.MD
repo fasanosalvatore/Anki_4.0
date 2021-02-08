@@ -117,6 +117,15 @@ $ az ml model deploy -n checkanswer -m checkanswer:1 --ic inferenceconfig.json -
 Now both containers have been deployed. It may take several minutes for them to start.
 Through the `Studio web URL` field inside the resource it is possible to monitor the cotainers and the registered models.
 Inside, in the **endpoint** section you can view the **links** to query the generated endpoint.
+Add the related links to the endpoints in the `.env`, you can find this informations in `consume` field.
+
+The `CHECK_ML_ENDPOINT` field for the model dedicated to check answer.
+
+The `CHECK_ML_TOKEN` field for the access to the model dedicated to check answer.
+
+
+
+
 
 ## Execution
 A bot developed with Azure Bot Service can be hosted both on Cloud using Web App service and in local using [ngrok](https://ngrok.com/). In this case the bot work well only using Telegram because the Bot Emulator doesn/t provide all necessary functionalities. The bot will work in the same way but is clearly better to run the bot in a local environment while testing.
