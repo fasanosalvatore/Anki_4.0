@@ -48,6 +48,19 @@ Bot Channels Registration allows to register a bot in Microsoft Azure Portal wit
 4. In the lateral menu choose 'Keys and Endpoint', click on 'Show keys'.
 5. Copy one the two keys and save it in the file .env in ```SPEECH_API``` field.
 6. Copy position and save it in the file .env in ```SPEECH_LOCATION``` field.
+### CosmosDB
+1. Using the search bar find 'CosmosDB'.
+2. Provide the details for the Resource Group, the name and leave other field with the default. For the API field, select Azure Cosmos DB for MongoDB API.
+3. Check the box and create. When the resource is been correctly deployed go to resource.
+4. In the lateral menu choose 'Data explorer'.
+11. Click on 'New Database in the top left.'
+5. In the lateral menu choose 'Connection string'.
+6. Copy Username and save it in the file .env in ```COSMOSDB_USER``` field.
+7. Copy one the two passwords and save it in the file .env in ```COSMOSDB_PASSWORD``` field.
+8. Copy database name (in the top left) and save it in the file .env in ```COSMOSDB_DBNAME``` field.
+9. Copy host and save it in the file .env in ```COSMOSDB_HOST``` field.
+10. Copy port and save it in the file .env in ```COSMOSDB_PORT``` field.
+
 
 ### Function App
 [Azure Function App](https://docs.microsoft.com/en-us/azure/azure-functions/functions-overview) is the Serverless Computing service offered by Azure that allows to run blocks of code called function.
