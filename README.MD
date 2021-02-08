@@ -1,3 +1,4 @@
+# Anki 4.0 - AI Powered Study
 *The Anki 4.0 project was developed in the context of the Cloud Computing exam at the University of Saleno*
 
 Anki 4.0 is a bot for Telegram, easily adaptable to other platforms, which exploits the services provided by Microsoft Azure. The purpose of the bot is to help students in the study / repetition phase.
@@ -19,10 +20,48 @@ The bot is based on one of the most famous study methods in the world, the **fla
 
 
 ## Resources
-Based on [Azure Bot Service](https://docs.microsoft.com/en-us/azure/bot-service) ISISLabHelpDesk utilises some resources on Microsoft Azure to run, furthermore the available functionalities exploit several Azure services that are connected to the bot using specific credentials.
+Based on [Azure Bot Service](https://docs.microsoft.com/en-us/azure/bot-service) Anki 4.0 utilises some resources on Microsoft Azure to run, furthermore the available functionalities exploit several Azure services that are connected to the bot using specific credentials.
 In this section a tutorial for the creation of all the required Azure resources is proposed, both the [Portal](https://portal.azure.com) and the Azure CLI will be used. In order to maintain the cost low as much as possible will be chosen the free tier when available.
 
-**REMINDER** Every resource on Cloud needs some deployment time that in some cases can be quite long, be patient.
+### Resource Group
+First thing first an Azure Resource Group is required, this is pretty straightforward to do using the Azure Portal and can also be done dinamically while creating the first resource.
+
+**ATTENTION** The selected region must be the same for all the remaining resources.
+
+### Bot Channels Registration
+Bot Channels Registration allows to register a bot in Microsoft Azure Portal with the Azure Bot Service.
+
+1. Create a new resource and using the search bar find 'Bot Channels Registration'.
+1. Give the bot a name, this name will be showed on Microsoft Teams, Discord, etc.
+1. Provide the details for the Subscription, Resource Group (if you don't have one, here you can create a new one), and Location.
+1. Choose the 'Princing tier' F0 (Free).
+1. Leave all the others fields as default and press Create. When the resource is been correctly deployed go to resource.
+1. In the lateral menu choose 'Settings'.
+1. Search for the 'Microsoft App ID', copy it and save it in the file .env in the main folder of the project in MicrosoftAppId field. **ATTENTION** The file can be hidden, press CTRL+H to see it.
+1. Click on 'Manage' next to the 'Microsoft App ID' field and click on 'New client secret' bottom.
+1. Save the value field of the created key in the file .env in ```MicrosoftAppPassword``` field.
+
+### Function App
+[Azure Function App](https://docs.microsoft.com/en-us/azure/azure-functions/functions-overview) is the Serverless Computing service offered by Azure that allows to run blocks of code called function.
+Anki 4.0 uses a function to work with QuestionAndAnswerML.
+Using the Azure Portal.
+1. Create a new resource and using the search bar find 'Function App'.
+2. Provide the details for the Subscription, Resource Group and the name.
+3. Select Node.js as 'Runtime stack', choose the Region and leave the remaining fields as default.
+When the resource is been correctly deployed go to resource.
+1. In the lateral menu choose 'Functions' and create a new function using the button 'Add'.
+2. Select the 'Template HTTP trigger' and insert a name for the function.
+3. The Portal will redirect you automaticaly in the function page, click on 'Get Function URL'. copy the URL and save it in the file _.env_ in `FunctionEndpoint` field.
+4. In the lateral menu of the same page choose 'Code+test', replace the code with the one inside the file ```Functions/retrieveQna.js``` in the servicesResources folder and save.
+5. Go to `https://<FunctionAppName>.scm.azurewebsites.net` and choose 'Debug Console' -> 'CMD'.
+```sh
+$ cd site/wwwroot
+```
+6. Upload Question.js file and .env file.
+7. In the CMD run the follow line.
+```sh
+$ npm install axios mongoose dotenv
+```
 
 ### Machine Learning
 
@@ -33,7 +72,7 @@ In this section, you will learn how to deploy the models for creating questions 
 
 Using the Azure Portal.
 1. Create a new resource and using the search bar find 'Machine Learning'.
-2. Provide the details for the Subscription, Resource Group and the name. 
+2. Provide the details for the Subscription, Resource Group and the name.
 4. Leave all the others fields as default.
 
 When the resource is been correctly deployed go to resource.
@@ -45,3 +84,23 @@ When the resource is been correctly deployed go to resource.
 
 
 
+
+## Execution
+A bot developed with Azure Bot Service can be hosted both on Cloud using Web App service and in local using [ngrok](https://ngrok.com/). In this case the bot work well only using Telegram because the Bot Emulator doesn/t provide all necessary functionalities. The bot will work in the same way but is clearly better to run the bot in a local environment while testing.
+### Local hosting
+#### Testing the bot in Telegram
+1. Start ngrok
+```sh
+$ ./ngrok http -host-header=rewrite 3978
+```
+2. Open a terminal in ISISLabHelpDesk folder and start the bot
+```sh
+$ npm start
+```
+3. Go to the Bot Channels Registration resource using the Azure Portal:
+    * Search BotFather in Telegram
+    * Start the conversation and digit ```/newbot```, set a correct name and copy the API Key.
+    * In the lateral menu choose 'Channels', select Telegram in the list and paste the API Key copied in the previous step.
+    * In the lateral menu choose 'Settings' and insert as 'Messaging endpoint' the URL showed in terminal by ngrok followed by 'api/messages/". You should get something like `https://1aa1a1234567.ngrok.io/api/messages`.
+    * Click on 'Save'.
+    * Go in Telegram and search the newly created bot, everything is already working.
