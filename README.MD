@@ -40,7 +40,24 @@ When the resource is been correctly deployed go to resource.
 
 1. Donwload `Question Generate Model` and extract into `/multi-qg-qa` folder.
 2. Donwload `Check Answer Model` and extract into `/checkanswer/models` folder.
-3. Use `MachineLearning/loader.py` to register the two models to azure. Before u
+3. In `MachineLearning/loader.py` enter the missing data required from the file. you can find them on the main page of the resource. Then run commands below.
+```sh
+$ pip install azureml-sdk
+$ python MachineLearning/loader.py
+```
+4. Wait for the script to finish.
+5. Go `MachineLearning/multi-qg-qa` folder and run the script below.
+```sh
+$ az ml model deploy -n qgenerationn -m qgeneration:1 --ic inferenceconfig.json --dc deploymentconfig.json -w WORKSPACE_NAME -g RESOUCEGROUP_NAME
+```
+6. Go `MachineLearning/checkanswer` folder and run the script below.
+```sh
+$ az ml model deploy -n checkanswer -m checkanswer:1 --ic inferenceconfig.json --dc deploymentconfig.json -w WORKSPACE_NAME -g RESOUCEGROUP_NAME
+```
+Now both containers have been deployed. It may take several minutes for them to start.
+Through the "Studio web URL" field inside the resource it is possible to monitor the cotainers and the registered models.
+Inside, in the endpoint section you can view the links to query the generated endpoint.
+
 
 
 

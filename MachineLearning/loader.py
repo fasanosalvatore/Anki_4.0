@@ -19,3 +19,5 @@ Model.register(model_path = "./checkanswer/models",
                        model_name = "checkanswer",
                        description = "Model trained outside Azure Machine Learning",
                        workspace = ws)
+
+print("Models registered")
