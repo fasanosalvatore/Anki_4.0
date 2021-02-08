@@ -94,8 +94,8 @@ $ az ml model deploy -n qgenerationn -m qgeneration:1 --ic inferenceconfig.json 
 $ az ml model deploy -n checkanswer -m checkanswer:1 --ic inferenceconfig.json --dc deploymentconfig.json -w WORKSPACE_NAME -g RESOUCEGROUP_NAME
 ```
 Now both containers have been deployed. It may take several minutes for them to start.
-Through the "Studio web URL" field inside the resource it is possible to monitor the cotainers and the registered models.
-Inside, in the endpoint section you can view the links to query the generated endpoint.
+Through the `Studio web URL` field inside the resource it is possible to monitor the cotainers and the registered models.
+Inside, in the **endpoint** section you can view the **links** to query the generated endpoint.
 
 
 
