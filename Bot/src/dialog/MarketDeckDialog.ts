@@ -35,6 +35,7 @@ export class MarketDeckDialog extends ComponentDialog {
 		this.addDialog(new ChoicePrompt(CHOICE_PROMPT2)).addDialog(
 			new WaterfallDialog(MAIN_WATERFALL_DIALOG, [
 				this.firstStep.bind(this),
+				this.deckNameStep.bind(this),
 				this.finalStep.bind(this),
 			]),
 		);
@@ -68,40 +69,52 @@ export class MarketDeckDialog extends ComponentDialog {
 		return await step.prompt(CHOICE_PROMPT2, {
 			prompt: 'Select the deck you want to import',
 			choices: ChoiceFactory.toChoices([
-				...decks.map((deck) => `${deck.deckName} by ${deck.userName}`),
+				'Return to menu',
+				...decks.map(
+					(deck) =>
+						`${new Array(Math.floor((deck.deckLikes! * 100) / deck.deckUsers! / 33.3))
+							.fill('⭐️')
+							.join('')} - ${deck.deckName} by ${deck.userName} ${
+							deck.deckPrice != 0 ? `- $${deck.deckPrice}` : ''
+						}`,
+				),
 			]),
 			style: ListStyle.suggestedAction,
 		});
 	}
 
-	private async finalStep(step: WaterfallStepContext) {
-		let { value: deckName } = step.result;
-		deckName = deckName.split(' ')[0];
-		const deck = await DeckModel.findOne({ deckName });
+	private async deckNameStep(step: WaterfallStepContext) {
+		if (step.result.index === 0) return await step.endDialog();
+		// @ts-ignore
+		step.values.deckName = step.result.value;
+		const deck = await DeckModel.findOne({ deckname: step.result });
 		if (deck) {
 			await step.context.sendActivity(
-				'Attention, it seems to us you have already imported this deck!',
+				'Attention, the deck name must be unique, try again with a new name!',
 			);
-			return await step.endDialog();
+			return await step.replaceDialog(MARKET_DECK_DIALOG);
 		}
-		const questions: Question[] = await QuestionModel.find({ deckName });
-		await DeckModel.create({
-			userId: step.context.activity.from.id,
-			userName: step.context.activity.from.name,
-			deckName,
+		return await step.prompt(TEXT_PROMPT, {
+			prompt: 'What is the name of the new deck?',
 		});
-		questions.map(async (qna) => {
-			const { question, answer } = qna;
-			await QuestionModel.create({
-				userId: step.context.activity.from.id,
-				question,
-				answer,
-				deckName,
-			});
-		});
+	}
+
+	private async finalStep(step: WaterfallStepContext) {
+		// @ts-ignore
+		let { deckName } = step.values;
+		const { result: newDeckName } = step;
+		deckName = deckName.substring(deckName.indexOf('-') + 2).split(' by ')[0];
+		const deck = await DeckModel.findOne({ deckName });
+		await step.context.sendActivity(
+			`Visit the following link and make the payment: ${
+				process.env.SERVER_URL
+			}/checkout?userId=${
+				step.context.activity.from.id
+			}&deckId=${deck?.id!}&newDeckName=${newDeckName}`,
+		);
 
 		await step.context.sendActivity(
-			'The deck was successfully imported, it will now be selectable from the main menu!',
+			'The deck will be available in the main menu once payment is confirmed!',
 		);
 
 		return await step.endDialog();

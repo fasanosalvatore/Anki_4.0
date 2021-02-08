@@ -32,6 +32,5 @@
   ],
   "include": [
     "./src/**/*.tsx",
-    "./src/**/*.ts"
-, "src/dialog/StudyDialog.js"  ]
+    "./src/**/*.ts"]
 }

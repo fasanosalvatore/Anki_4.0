@@ -5,7 +5,7 @@ export class Question {
 	public userId!: string;
 
 	@prop({ required: true })
-	public deckName?: string;
+	public deckName!: string;
 
 	@prop({ required: true })
 	public question!: string;

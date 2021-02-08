@@ -19,6 +19,7 @@ import {
 	WaterfallDialog,
 	WaterfallStepContext,
 } from 'botbuilder-dialogs';
+import { DeckModel } from '../model/Deck';
 import { AddQuestionDialog } from './AddQuestionsDialog';
 
 import { StudyDialog } from './StudyDialog';
@@ -49,6 +50,7 @@ export class MainDialog extends ComponentDialog {
 					this.initialStep.bind(this),
 					this.addQuestionStep.bind(this),
 					this.studyStep.bind(this),
+					this.likeStep.bind(this),
 					this.finalStep.bind(this),
 				]),
 			);
@@ -77,6 +79,11 @@ export class MainDialog extends ComponentDialog {
 		step.values.deckName = deckName;
 		const userName = await this.userProfileAccessor.get(step.context);
 
+		const deck = await DeckModel.findOne({
+			userId: step.context.activity.from.id,
+			deckName,
+		});
+
 		const messageText = `Hi ${userName}! I remind you that you are in the ${deckName} deck. What do you want to do?`;
 
 		const promptMessage = MessageFactory.text(
@@ -90,6 +97,9 @@ export class MainDialog extends ComponentDialog {
 			choices: ChoiceFactory.toChoices([
 				'I want to add new questions',
 				"I think it's time to study",
+				...(deck?.deckName != deck?.realDeckName && !deck?.liked
+					? ['I like this deck!']
+					: []),
 				'I want to select another deck',
 			]),
 			style: ListStyle.suggestedAction,
@@ -105,12 +115,40 @@ export class MainDialog extends ComponentDialog {
 	}
 
 	private async studyStep(step: WaterfallStepContext) {
-		if (!step.result) return await step.replaceDialog(MAIN_DIALOG);
+		if (!step.result)
+			return await step.replaceDialog(MAIN_DIALOG, {
+				//@ts-ignore
+				deckName: step.values.deckName,
+			});
 		const { index: scelta } = step.result;
-		if (scelta !== 1) return await step.endDialog();
+		if (scelta !== 1) return await step.next(step.result);
 		// @ts-ignore
 		const deckName = step.values.deckName;
 		return await step.beginDialog(STUDY_DIALOG, { deckName });
+	}
+
+	private async likeStep(step: WaterfallStepContext) {
+		if (!step.result)
+			return await step.replaceDialog(MAIN_DIALOG, {
+				//@ts-ignore
+				deckName: step.values.deckname,
+			});
+		const { index: scelta } = step.result;
+		if (scelta !== 2 || !step.result.value.split(' ').includes('like'))
+			return await step.endDialog();
+		// @ts-ignore
+		const deckName = step.values.deckName;
+		const deck = await DeckModel.findOne({ deckName });
+		const realDeck = await DeckModel.findOne({
+			realDeckName: deck!.realDeckName,
+		});
+		realDeck!.deckLikes!++;
+		await realDeck!.save();
+		deck!.liked = true;
+		await deck!.save();
+		return await step.replaceDialog(MAIN_DIALOG, {
+			deckName,
+		});
 	}
 
 	private async finalStep(step: WaterfallStepContext) {
@@ -124,6 +162,9 @@ export class MainDialog extends ComponentDialog {
 			await step.context.sendActivity(
 				`Are you tired? I'm sure you will recover tomorrow!`,
 			);
-		return await step.replaceDialog(MAIN_DIALOG);
+		return await step.replaceDialog(MAIN_DIALOG, {
+			//@ts-ignore
+			deckName: step.values.deckName,
+		});
 	}
 }

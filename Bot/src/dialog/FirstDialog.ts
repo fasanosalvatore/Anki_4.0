@@ -121,6 +121,7 @@ export class FirstDialog extends ComponentDialog {
 		return await step.prompt(CHOICE_PROMPT, {
 			prompt: promptMessage,
 			choices: ChoiceFactory.toChoices([
+				'Refresh Deck List',
 				'Visit the market',
 				'Create new deck',
 				...decks.map((deck) => deck.deckName),
@@ -131,14 +132,15 @@ export class FirstDialog extends ComponentDialog {
 
 	private async visitMarketStep(step: WaterfallStepContext) {
 		const { index: scelta } = step.result;
-		if (scelta !== 0) return await step.next(step.result);
+		if (scelta === 0) return await step.replaceDialog(FIRST_DIALOG);
+		if (scelta !== 1) return await step.next(step.result);
 		return await step.beginDialog(MARKET_DECK_DIALOG);
 	}
 
 	private async newDeckStep(step: WaterfallStepContext) {
 		if (!step.result) return await step.replaceDialog(FIRST_DIALOG);
 		const { index: scelta } = step.result;
-		if (scelta !== 1) return await step.next(step.result);
+		if (scelta !== 2) return await step.next(step.result);
 		return await step.beginDialog(NEW_DECK_DIALOG);
 	}
 
