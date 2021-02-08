@@ -96,7 +96,10 @@ $ az ml model deploy -n checkanswer -m checkanswer:1 --ic inferenceconfig.json -
 Now both containers have been deployed. It may take several minutes for them to start.
 Through the `Studio web URL` field inside the resource it is possible to monitor the cotainers and the registered models.
 Inside, in the **endpoint** section you can view the **links** to query the generated endpoint.
+Add the related links to the endpoints in the `.env`, you can find this informations in `consume` field.
 
+The `CHECK_ML_ENDPOINT` field for the model dedicated to check answer.
+The `CHECK_ML_TOKEN` field for the access to the model dedicated to check answer.
 
 
 
