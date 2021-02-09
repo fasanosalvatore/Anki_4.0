@@ -1,17 +1,8 @@
 import path from 'path';
 import fs, { PathLike } from 'fs';
 import axios from 'axios';
-import * as Bluebird from 'bluebird';
-import * as sdk from 'microsoft-cognitiveservices-speech-sdk';
-import ffmpeg from 'fluent-ffmpeg';
 
-import {
-	ActionTypes,
-	CardFactory,
-	StatePropertyAccessor,
-	TurnContext,
-	UserState,
-} from 'botbuilder';
+import { StatePropertyAccessor, TurnContext, UserState } from 'botbuilder';
 import {
 	ChoiceFactory,
 	ChoicePrompt,
@@ -24,9 +15,9 @@ import {
 	WaterfallStepContext,
 } from 'botbuilder-dialogs';
 import { AttachmentTextPrompt } from './AttachmentTextPrompt';
-import { Question, QuestionModel } from '../model/Question';
 
-const ADD_QUESTION_DIALOG = 'ADD_QUESTION_DIALOG';
+export const ADD_QUESTION_DIALOG = 'ADD_QUESTION_DIALOG';
+
 const MAIN_WATERFALL_DIALOG = 'WATERFALL_DIALOG';
 const ATT_PROMPT = 'TEXT_PROMPT';
 const CHOICE_PROMPT = 'REPEAT_OR_NOT';

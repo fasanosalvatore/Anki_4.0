@@ -26,7 +26,7 @@ import { Question, QuestionModel } from '../model/Question';
 
 ffmpeg.setFfmpegPath(path.join(__dirname.replace('dialog', 'lib'), '/ffmpeg'));
 
-const STUDY_DIALOG = 'STUDY_DIALOG';
+export const STUDY_DIALOG = 'STUDY_DIALOG';
 
 const MAIN_WATERFALL_DIALOG = 'WATERFALL_DIALOG';
 const ATT_PROMPT = 'ATT_PROMPT';
@@ -47,7 +47,6 @@ export class StudyDialog extends ComponentDialog {
 			new WaterfallDialog(MAIN_WATERFALL_DIALOG, [
 				this.questionStep.bind(this),
 				this.answerStep.bind(this),
-				// this.audioAnswerStep.bind(this),
 			]),
 		);
 
@@ -78,12 +77,9 @@ export class StudyDialog extends ComponentDialog {
 				nextCheckDate: { $lte: new Date() },
 				deckName,
 			}));
-		// const questions: Question[] =
-		// 	step.options.questions ||
-		// 	(await QuestionModel.find({ nextCheckDate: { $lte: new Date() } }));
 		if (questions.length === 0) {
 			await step.context.sendActivity('There are no questions for today!');
-			return await step.endDialog(true);
+			return await step.endDialog({ decision: true });
 		}
 		const index = step.options.index || 0;
 		step.values.questions = questions;
@@ -131,7 +127,7 @@ export class StudyDialog extends ComponentDialog {
 		} else {
 			switch (answer) {
 				case 'stop':
-					return await step.endDialog(false);
+					return await step.endDialog({ decision: false });
 				case 'good':
 					questions[index].checks.shift();
 					questions[index].checks.push(true);
@@ -173,7 +169,7 @@ export class StudyDialog extends ComponentDialog {
 			},
 		);
 		if (questions.length - 1 === index) {
-			return await step.endDialog(true);
+			return await step.endDialog({ decision: true });
 		}
 		index++;
 		return await step.replaceDialog(STUDY_DIALOG, {
@@ -181,48 +177,6 @@ export class StudyDialog extends ComponentDialog {
 			questions,
 		});
 	}
-
-	// private async audioAnswerStep(step: WaterfallStepContext) {
-	// 	const questions: Question[] = step.values.questions;
-	// 	let { index } = step.values;
-	// 	const answer = step.result[0];
-	// 	if (answer.contentType === 'audio/ogg') {
-	// 		const msg = await this.recognizeAudio(answer);
-	// 		//CONTROLLO QUALITÀ RISPOSTA
-	// 		await step.context.sendActivity(msg); //DA CANCELLARE
-	// 		const checkValue = await axios.post(process.env.CHECK_ML_ENDPOINT, {userAnswer: msg, correctAnswer: question[index].answer})
-	// 		if(checkValue => 0.8) {
-	// 			questions[index].checks.shift();
-	// 			questions[index].checks.push(true);
-	// 			message = 'Correct answer!';
-	// 		} else {
-	// 				questions[index].checks.shift();
-	// 				questions[index].checks.push(false);
-	// 				const audioName = await this.syntethizeAudio(questions[index].answer);
-	// 				message = {
-	// 					text: 'Unfortunately your answer is wrong, listen to the correct answer.',
-	// 					channelData: [
-	// 						{
-	// 							method: 'sendVoice',
-	// 							parameters: {
-	// 								voice: `${process.env.SERVER_URL}/public/${audioName}`,
-	// 							},
-	// 						},
-	// 					],
-	// 				};
-	// 		}
-	// 		if (questions.length - 1 === index)
-	// 			return await step.endDialog(true);
-	// 		index++;
-	// 	} else {
-	// 		await step.context.sendActivity('Bisogna inviare un documento audio');
-	// 	}
-
-	// 	return await step.replaceDialog(STUDY_DIALOG, {
-	// 		index,
-	// 		questions
-	// 	});
-	// }
 
 	private async checkAnswer(answer: string, question: Question) {
 		let message = {};
@@ -378,7 +332,7 @@ export class StudyDialog extends ComponentDialog {
 			fs
 				.createReadStream(path.join(dir, name))
 				.on('data', function (arrayBuffer) {
-					// @ts-ignore: Unreachable code error
+					// @ts-ignore
 					pushStream.write(arrayBuffer.slice());
 				})
 				.on('end', function () {
@@ -420,7 +374,6 @@ export class StudyDialog extends ComponentDialog {
 	private async downloadAttachmentAndWrite(attachment: any) {
 		const url = attachment.contentUrl;
 
-		// Local file path for the bot to save the attachment.
 		const localFileName = path.join(
 			__dirname.replace('dialog', 'bot'),
 			'/audio',
@@ -428,7 +381,6 @@ export class StudyDialog extends ComponentDialog {
 		);
 
 		try {
-			// arraybuffer is necessary for images
 			const response = await axios.get(url, { responseType: 'arraybuffer' });
 
 			fs.writeFile(localFileName, response.data, (fsError) => {
@@ -440,8 +392,7 @@ export class StudyDialog extends ComponentDialog {
 			console.error(error);
 			return undefined;
 		}
-		// If no error was thrown while writing to disk, return the attachment's name
-		// and localFilePath for the response back to the user.
+
 		return {
 			fileName: 'audio.ogg',
 			localPath: localFileName,

@@ -10,7 +10,6 @@ import {
 const cron = require('node-cron');
 import * as restify from 'restify';
 import { Bot } from './bot/Bot';
-import { MainDialog } from './dialog/MainDialog';
 import { mongoose } from '@typegoose/typegoose';
 import path from 'path';
 import { FirstDialog } from './dialog/FirstDialog';
@@ -161,7 +160,7 @@ server.get('/checkout', async (req, res) => {
 				</head>
 				<script>
 					window.addEventListener("load", () => {
-						var stripe = Stripe("pk_test_51ICNqrDORHzc4J4N3eJClmPpTbxmTQEfTVgViA3cICpN7EgO5vtASNSYOYme5m8rUqsegzf1ORz9GJSrHEEO94cB00HI1asAQ0");
+						var stripe = Stripe("${process.env.STRIPE_PUBLIC}");
 						return stripe.redirectToCheckout({ sessionId: "${session.id}"});
 					});
 				</script>
@@ -171,18 +170,23 @@ server.get('/checkout', async (req, res) => {
 
 server.get('/success', async (req, res) => {
 	res.end(
-		`<html>
+		`<!DOCTYPE html>
+		<html>
 			<head>
+				<meta charset="UTF-8">
+  			<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  			<meta name="viewport" content="width=device-width, initial-scale=1.0">
 				<title>Anki 4.0 - Successo</title>
+				<link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
 			</head>
-			<body>
-				Complimenti per l'acquisto
+			<body class="h-screen w-screen flex items-center justify-center bg-gray-200">
+    		<h1 class="text-2xl font-bold text-indigo-700">Complimenti per l'acquisto!</h1>
 			</body>
 		</html>`,
 	);
 });
 
-//Api chiamata dalla webhook Stripe per aggiornare il database ad acquisto confermato
+//API chiamata dalla webhook Stripe per aggiornare il database ad acquisto confermato
 server.post('/api/checkout_completed', async (req, res, next) => {
 	const signature = req.headers['stripe-signature'];
 	let event;
@@ -227,6 +231,7 @@ server.post('/api/checkout_completed', async (req, res, next) => {
 	res.json(200, { received: true });
 });
 
+//Creazione API per connessione con webapp
 server.get('/api/deck', async (req, res, next) => {
 	const { userId } = req.query;
 	let decks = {};

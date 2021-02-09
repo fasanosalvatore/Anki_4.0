@@ -9,11 +9,11 @@ import {
 	TextPrompt,
 	WaterfallDialog,
 	WaterfallStepContext,
-	WaterfallStepInfo,
 } from 'botbuilder-dialogs';
 import { DeckModel } from '../model/Deck';
 
-const NEW_DECK_DIALOG = 'NEW_DECK_DIALOG';
+export const NEW_DECK_DIALOG = 'NEW_DECK_DIALOG';
+
 const MAIN_WATERFALL_DIALOG = 'WATERFALL_DIALOG';
 const TEXT_PROMPT = 'TEXT_PROMPT';
 const CONFIRM_PROMPT = 'CONFIRM_PROMPT';

@@ -6,12 +6,6 @@ Anki 4.0 is a bot for Telegram, easily adaptable to other platforms, which explo
 
 The bot is based on one of the most famous study methods in the world, the **flashcard** method, combined with the concept of **spaced repetition**.
 
-## Concepts
-
-### Flashcard
-
-### Ripetizione Spaziata
-
 ## Prerequisites
 
 - [An Azure Subscription](https://portal.azure.com/)
@@ -21,6 +15,17 @@ The bot is based on one of the most famous study methods in the world, the **fla
 - [ngrok](https://ngrok.com/)
 - [Question Generate Model](https://drive.google.com/file/d/1mUAh_2PEHy9_hheN4IGzIWqCZtFKSBkM/view?usp=sharing)
 - [Check Answer Model](https://sbert.net/models/stsb-roberta-base.zip)
+- [Stripe account](https://stripe.com/it)
+
+## Stripe Setup
+
+1. First of all, you need to create an account on Stripe.
+2. After logging in, in the top right you can create an account for this particular "shop", by clicking on "New account" you just need to enter the account name and the country in which it is located.
+3. On the page that opens, click on "Download your API keys" copy the publishable key and save it in the _.env_ file in the `STRIPE_PUBLIC` field and copy the secret key saving it in the `STRIPE_PRIVATE` field.
+4. Now we need to create a webhook, to do this click on "Developers" in the menu on the left and then on "Webhook", click on "Add endpoint" at the top right and here enter:
+    - In the Endpoint URL field enter the server URL by copying it from the ngrok tab in the terminal and add this to the end /api/checkout_completed, you will get something like `https://88a25b9e15a7.ngrok.io/api/checkout_completed`.
+    - For the "Events to be sent" field, the following event must be selected from the drop-down menu `checkout.session.completed`.
+    - Finally you can finish by clicking on "Add endpoint".
 
 ## Resources
 

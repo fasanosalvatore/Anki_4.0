@@ -7,15 +7,13 @@ import {
 	DialogState,
 	DialogTurnStatus,
 	ListStyle,
-	TextPrompt,
 	WaterfallDialog,
 	WaterfallStepContext,
 } from 'botbuilder-dialogs';
 import { DeckModel } from '../model/Deck';
-import { Question, QuestionModel } from '../model/Question';
 
-const MARKET_DECK_DIALOG = 'MARKET_DECK_DIALOG';
-const NEW_DECK_DIALOG = 'NEW_DECK_DIALOG';
+export const MARKET_DECK_DIALOG = 'MARKET_DECK_DIALOG';
+
 const MAIN_WATERFALL_DIALOG = 'WATERFALL_DIALOG';
 const TEXT_PROMPT = 'TEXT_PROMPT';
 const USER_PROFILE_PROPERTY = 'USER_PROFILE_PROPERTY';
@@ -60,6 +58,7 @@ export class MarketDeckDialog extends ComponentDialog {
 	private async firstStep(step: WaterfallStepContext) {
 		const decks = await DeckModel.find({
 			userId: { $ne: step.context.activity.from.id },
+			market: { $eq: true },
 		});
 		if (decks.length == 0) {
 			await step.context.sendActivity('There are no decks to import');

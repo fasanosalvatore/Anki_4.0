@@ -1,6 +1,4 @@
 import {
-	ActionTypes,
-	CardFactory,
 	InputHints,
 	MessageFactory,
 	StatePropertyAccessor,
@@ -20,14 +18,13 @@ import {
 	WaterfallStepContext,
 } from 'botbuilder-dialogs';
 import { DeckModel } from '../model/Deck';
-import { AddQuestionDialog } from './AddQuestionsDialog';
+import { AddQuestionDialog, ADD_QUESTION_DIALOG } from './AddQuestionsDialog';
 
-import { StudyDialog } from './StudyDialog';
+import { StudyDialog, STUDY_DIALOG } from './StudyDialog';
 
-const MAIN_DIALOG = 'MAIN_DIALOG';
+export const MAIN_DIALOG = 'MAIN_DIALOG';
+
 const MAIN_WATERFALL_DIALOG = 'WATERFALL_DIALOG';
-const ADD_QUESTION_DIALOG = 'ADD_QUESTION_DIALOG';
-const STUDY_DIALOG = 'STUDY_DIALOG';
 const TEXT_PROMPT = 'TEXT_PROMPT';
 const CHOICE_PROMPT = 'CHOICE_PROMPT';
 const USER_PROFILE_PROPERTY = 'USER_PROFILE_PROPERTY';
@@ -133,6 +130,7 @@ export class MainDialog extends ComponentDialog {
 				//@ts-ignore
 				deckName: step.values.deckname,
 			});
+		if ('decision' in step.result) return await step.next(step.result);
 		const { index: scelta } = step.result;
 		if (scelta !== 2 || !step.result.value.split(' ').includes('like'))
 			return await step.endDialog();
@@ -154,7 +152,7 @@ export class MainDialog extends ComponentDialog {
 	private async finalStep(step: WaterfallStepContext) {
 		const { result } = step;
 		const user = await this.userProfileAccessor.get(step.context);
-		if (result) {
+		if (result.decision) {
 			await step.context.sendActivity(
 				`Looks like you're done for today, congratulations ${user}! See you tomorrow to study!`,
 			);

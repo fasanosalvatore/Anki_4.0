@@ -21,19 +21,15 @@ import {
 } from 'botbuilder-dialogs';
 import { DeckModel } from '../model/Deck';
 import { AddQuestionDialog } from './AddQuestionsDialog';
-import { MainDialog } from './MainDialog';
-import { MarketDeckDialog } from './MarketDeckDialog';
-import { NewDeckDialog } from './NewDeckDialog';
+import { MainDialog, MAIN_DIALOG } from './MainDialog';
+import { MarketDeckDialog, MARKET_DECK_DIALOG } from './MarketDeckDialog';
+import { NewDeckDialog, NEW_DECK_DIALOG } from './NewDeckDialog';
 
 import { StudyDialog } from './StudyDialog';
 
-const MAIN_DIALOG = 'MAIN_DIALOG';
-const FIRST_DIALOG = 'FIRST_DIALOG';
-const MARKET_DECK_DIALOG = 'MARKET_DECK_DIALOG';
-const NEW_DECK_DIALOG = 'NEW_DECK_DIALOG';
+export const FIRST_DIALOG = 'FIRST_DIALOG';
+
 const MAIN_WATERFALL_DIALOG = 'WATERFALL_DIALOG';
-const ADD_QUESTION_DIALOG = 'ADD_QUESTION_DIALOG';
-const STUDY_DIALOG = 'STUDY_DIALOG';
 const TEXT_PROMPT = 'TEXT_PROMPT';
 const CHOICE_PROMPT = 'CHOICE_PROMPT';
 const USER_PROFILE_PROPERTY = 'USER_PROFILE_PROPERTY';

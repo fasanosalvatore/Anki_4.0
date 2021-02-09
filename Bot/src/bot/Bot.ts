@@ -1,20 +1,11 @@
-import fs from 'fs';
-import path from 'path';
-import * as Bluebird from 'bluebird';
 import {
-	ActionTypes,
 	Activity,
 	ActivityHandler,
-	CardFactory,
 	ConversationState,
 	StatePropertyAccessor,
 	TurnContext,
 	UserState,
 } from 'botbuilder';
-import axios from 'axios';
-import * as sdk from 'microsoft-cognitiveservices-speech-sdk';
-import ffmpeg from 'fluent-ffmpeg';
-import { MainDialog } from '../dialog/MainDialog';
 import { FirstDialog } from '../dialog/FirstDialog';
 
 export class Bot extends ActivityHandler {
@@ -73,8 +64,6 @@ export class Bot extends ActivityHandler {
 
 	async run(context: TurnContext) {
 		await super.run(context);
-
-		// Save any state changes. The load happened during the execution of the Dialog.
 		await this.conversationState.saveChanges(context, false);
 		await this.userState.saveChanges(context, false);
 	}
