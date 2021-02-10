@@ -102,7 +102,7 @@ export class FirstDialog extends ComponentDialog {
 		}
 		const userName = user || step.result;
 
-		const messageText = `Hi ${userName}! Which deck do you want to use??`;
+		const messageText = `Hi ${userName}! Which deck do you want to use?`;
 
 		const promptMessage = MessageFactory.text(
 			messageText,
