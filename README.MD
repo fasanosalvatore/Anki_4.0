@@ -6,6 +6,10 @@ Anki 4.0 is a bot for Telegram, easily adaptable to other platforms, which explo
 
 The bot is based on one of the most famous study methods in the world, the **flashcard** method, combined with the concept of **spaced repetition**.
 
+## Architecture
+
+![Anki4.0 Architecture](img/architecture.png)
+
 ## Prerequisites
 
 - [An Azure Subscription](https://portal.azure.com/)
