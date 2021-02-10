@@ -32,6 +32,8 @@ The bot is based on one of the most famous study methods in the world, the **fla
 Based on [Azure Bot Service](https://docs.microsoft.com/en-us/azure/bot-service) Anki 4.0 utilises some resources on Microsoft Azure to run, furthermore the available functionalities exploit several Azure services that are connected to the bot using specific credentials.
 In this section a tutorial for the creation of all the required Azure resources is proposed, both the [Portal](https://portal.azure.com) and the Azure CLI will be used. In order to maintain the cost low as much as possible will be chosen the free tier when available.
 
+**ATTENTION** Unless otherwise indicated, when we talk about .env file we refer to `Bot/.env`
+
 ### Resource Group
 
 First thing first an Azure Resource Group is required, this is pretty straightforward to do using the Azure Portal and can also be done dinamically while creating the first resource.
@@ -74,6 +76,7 @@ Bot Channels Registration allows to register a bot in Microsoft Azure Portal wit
 9. Copy database name (in the top left) and save it in the file .env in ```COSMOSDB_DBNAME``` field.
 10. Copy host and save it in the file .env in ```COSMOSDB_HOST``` field.
 11. Copy port and save it in the file .env in ```COSMOSDB_PORT``` field.
+12. Repeat same copy operations for `Functions/.env`
 
 ### Function App
 
@@ -143,9 +146,13 @@ Through the `Studio web URL` field inside the resource it is possible to monitor
 Inside, in the **endpoint** section you can view the **links** to query the generated endpoint.
 Add the related links to the endpoints in the `.env`, you can find this informations in `consume` field.
 
-The `CHECK_ML_ENDPOINT` field for the model dedicated to check answer.
+7. The `QNA_ML_ENDPOINT` field for the model dedicated to generation of questions (in `Functions/.env`).
 
-The `CHECK_ML_TOKEN` field for the access to the model dedicated to check answer.
+8. The `QNA_ML_TOKEN` field for the access to the model dedicated to generation of questions (in `Functions/.env`).
+
+9. The `CHECK_ML_ENDPOINT` field for the model dedicated to check answer.
+
+10. The `CHECK_ML_TOKEN` field for the access to the model dedicated to check answer.
 
 ## Execution
 
